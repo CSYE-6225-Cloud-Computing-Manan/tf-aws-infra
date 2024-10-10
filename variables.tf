@@ -8,6 +8,21 @@ variable "aws_profile" {
   type        = string
 }
 
+variable "vpc_name" {
+  description = "tag Name for the VPC"
+  type        = string
+}
+
+variable "igw_name" {
+  description = "tag Name for the Internet Gateway"
+  type        = string
+}
+
+variable "internet_cidr" {
+  description = "tag Name for the Internet CIDR"
+  type        = string
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
