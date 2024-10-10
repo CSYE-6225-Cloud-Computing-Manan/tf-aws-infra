@@ -38,6 +38,16 @@ variable "private_subnet_cidrs" {
   type        = list(string)
 }
 
+variable "private_route_table" {
+  description = "Name of private route table"
+  type        = string
+}
+
+variable "public_route_table" {
+  description = "Name of public route table"
+  type        = string
+}
+
 variable "availability_zones" {
   description = "List of availability zones to use"
   type        = list(string)
