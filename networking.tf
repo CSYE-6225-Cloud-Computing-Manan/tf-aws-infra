@@ -2,7 +2,7 @@ resource "aws_vpc" "dev_vpc" {
   cidr_block = var.vpc_cidr
 
   tags = {
-    Name = "dev-a03-vpc"
+    Name = var.vpc_name
   }
 }
 
@@ -10,7 +10,7 @@ resource "aws_internet_gateway" "igw-dev" {
   vpc_id = aws_vpc.dev_vpc.id
 
   tags = {
-    Name = "dev-a03-igw"
+    Name = var.igw_name
   }
 }
 
@@ -46,7 +46,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.dev_vpc.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = var.internet_cidr
     gateway_id = aws_internet_gateway.igw-dev.id
   }
 
