@@ -51,7 +51,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "public-route-table"
+    Name = var.public_route_table
   }
 }
 
@@ -67,7 +67,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.dev_vpc.id
 
   tags = {
-    Name = "private-route-table"
+    Name = var.private_route_table
   }
 }
 
