@@ -53,3 +53,61 @@ variable "availability_zones" {
   type        = list(string)
 }
 
+variable "ssh_port" {
+  description = "The SSH port"
+  type        = number
+}
+
+variable "http_port" {
+  description = "The HTTP port"
+  type        = number
+}
+
+variable "https_port" {
+  description = "The HTTPS port"
+  type        = number
+}
+
+variable "app_port" {
+  description = "The application port"
+  type        = number
+}
+
+variable "tcp_protocol" {
+  description = "The TCP protocol"
+  type        = string
+}
+
+variable "ingress_cidr_blocks" {
+  description = "List of CIDR blocks to allow ingress traffic"
+  type        = list(string)
+}
+
+variable "egress_cidr_blocks" {
+  description = "List of CIDR blocks to allow egress traffic"
+  type        = list(string)
+}
+
+variable "instance_type" {
+  description = "The EC2 instance type"
+  type        = string
+}
+
+variable "custom_ami" {
+  description = "The custom AMI ID"
+  type        = string
+}
+
+variable "volume_size" {
+  description = "The volume size"
+  type        = number
+}
+
+variable "volume_type" {
+  description = "The volume type"
+  type        = string
+}
+
+
+
+
