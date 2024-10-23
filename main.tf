@@ -36,23 +36,43 @@ resource "aws_security_group" "application-security-group" {
     cidr_blocks = var.ingress_cidr_blocks
   }
 
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = var.egress_cidr_blocks
+  }
+
 
   tags = {
     Name = "application-security-group"
   }
 }
 
-# EC2 Instance Resource
+
 resource "aws_instance" "web_app_ec2" {
   ami                    = var.custom_ami
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.application-security-group.id]
   subnet_id              = aws_subnet.public[0].id
 
-  # Disable accidental termination protection
+  user_data = <<-EOF
+              #!/bin/bash
+              cd /home/csye-6225/webapp/webapp
+              touch .env
+              echo "PORT=3000" >> .env
+              echo "DB_HOST=${aws_db_instance.database.address}" >> .env
+              echo "DB_NAME=${aws_db_instance.database.db_name}" >> .env
+              echo "DB_USERNAME=${aws_db_instance.database.username}" >> .env
+              echo "DB_PASSWORD=${aws_db_instance.database.password}" >> .env
+              echo "DB_DIALECT=${var.db_dialect}" >> .env
+              sudo systemctl enable startup.service
+              sudo systemctl start startup.service
+              EOF
+
   disable_api_termination = false
 
-  # Terminate EBS volume when the instance is terminated
   root_block_device {
     volume_size           = var.volume_size
     volume_type           = var.volume_type
@@ -63,6 +83,7 @@ resource "aws_instance" "web_app_ec2" {
     Name = "web-app-instance"
   }
 }
+
 
 # Output the EC2 public IP
 output "ec2_public_ip" {
