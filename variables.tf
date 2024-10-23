@@ -109,5 +109,66 @@ variable "volume_type" {
 }
 
 
+variable "db_port" {
+  description = "The port for the RDS instance"
+  type        = number
+}
+
+variable "pg_family" {
+  description = "The family for the RDS instance"
+  type        = string
+}
+
+variable "allocated_storage" {
+  description = "The allocated storage for the RDS instance"
+  type        = number
+}
+
+variable "engine" {
+  description = "The engine for the RDS instance"
+  type        = string
+}
+
+variable "engine_version" {
+  description = "The engine version for the RDS instance"
+  type        = string
+}
+
+variable "instance_class" {
+  description = "The instance class for the RDS instance"
+  type        = string
+}
+
+variable "db_name" {
+  description = "The name of the database"
+  type        = string
+}
+
+variable "username" {
+  description = "The username for the RDS instance"
+  type        = string
+}
+
+variable "db_password" {
+  description = "The password for the RDS instance"
+  type        = string
+}
+
+variable "db_dialect" {
+  description = "The dialect for the RDS instance"
+  type        = string
+}
+
+variable "backup_retention_period" {
+  description = "The backup retention period for the RDS instance"
+  type        = number
+}
+
+variable "identifier_rds" {
+  description = "The identifier for the RDS instance"
+  type        = string
+}
+
+
 
 
