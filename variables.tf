@@ -179,6 +179,42 @@ variable "subdomain" {
   type        = string
 }
 
+variable "s3_policy_path" {
+  description = "The path for the S3 policy"
+  type        = string
+}
 
+variable "s3_policy_version" {
+  description = "The version for the S3 policy"
+  type        = string
+}
 
+variable "s3_policy_effect" {
+  description = "The effect for the S3 policy"
+  type        = string
+}
 
+variable "s3_policy_action" {
+  description = "The action for the S3 policy"
+  type        = string
+}
+
+variable "storage_class" {
+  description = "The storage class for the S3 bucket"
+  type        = string
+}
+
+variable "s3_encryption_algorithm" {
+  description = "The encryption algorithm for the S3 bucket"
+  type        = string
+}
+
+variable "s3_rule_id" {
+  description = "The ID for the S3 rule"
+  type        = string
+}
+
+variable "s3_rule_status" {
+  description = "The status for the S3 rule"
+  type        = string
+}

@@ -101,11 +101,11 @@ locals {
 
 resource "aws_iam_policy" "webapp_s3_policy" {
   name        = "WebappS3Policy"
-  path        = "/"
+  path        = var.s3_policy_path
   description = "Allow webapp s3 access"
 
   policy = jsonencode({
-    Version : "2012-10-17",
+    Version : var.s3_policy_version,
     Statement : [
       {
         "Action" : [
@@ -113,7 +113,7 @@ resource "aws_iam_policy" "webapp_s3_policy" {
           "s3:GetObject",
           "s3:PutObject"
         ],
-        "Effect" : "Allow",
+        "Effect" : var.s3_policy_effect,
         "Resource" : [
           "arn:aws:s3:::${aws_s3_bucket.bucket.bucket}",
           "arn:aws:s3:::${aws_s3_bucket.bucket.bucket}/*"
@@ -131,11 +131,11 @@ resource "aws_iam_role" "webapp_ec2_access_role" {
   name = "EC2-WEBAPP-CSYE-6225"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = var.s3_policy_version,
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action = var.s3_policy_action,
+        Effect = var.s3_policy_effect,
         Sid    = ""
         Principal = {
           Service = "ec2.amazonaws.com"
