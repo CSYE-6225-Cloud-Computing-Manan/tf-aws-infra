@@ -16,12 +16,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket_lifecycle_config" {
   bucket = aws_s3_bucket.bucket.id
 
   rule {
-    id     = "move_to_IA"
-    status = "Enabled"
+    id     = var.s3_rule_id
+    status = var.s3_rule_status
 
     transition {
       days          = 30
-      storage_class = "STANDARD_IA"
+      storage_class = var.storage_class
     }
   }
 }
@@ -31,7 +31,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_encryption" {
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm = var.s3_encryption_algorithm
     }
   }
 }
