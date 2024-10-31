@@ -169,6 +169,16 @@ variable "identifier_rds" {
   type        = string
 }
 
+variable "domain_name" {
+  description = "The domain name for the Route 53 zone"
+  type        = string
+}
+
+variable "subdomain" {
+  description = "The subdomain (dev or demo) to use for the Route 53 record"
+  type        = string
+}
+
 
 
 
