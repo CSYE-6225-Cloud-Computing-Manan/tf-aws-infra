@@ -1,39 +1,24 @@
 # Security Group for EC2 hosting the web application
-resource "aws_security_group" "application-security-group" {
-  name        = "application-security-group"
+resource "aws_security_group" "webapp_sg" {
+  name        = "WebAppSecurityGroup"
   description = "Security group for web application EC2 instances"
   vpc_id      = aws_vpc.dev_vpc.id
 
-  # Allow SSH access (port 22)
   ingress {
+    description = "SSH from anywhere"
     from_port   = var.ssh_port
     to_port     = var.ssh_port
     protocol    = var.tcp_protocol
     cidr_blocks = var.ingress_cidr_blocks
   }
 
-  # Allow HTTP traffic (port 80)
-  ingress {
-    from_port   = var.http_port
-    to_port     = var.http_port
-    protocol    = var.tcp_protocol
-    cidr_blocks = var.ingress_cidr_blocks
-  }
-
-  # Allow HTTPS traffic (port 443)
-  ingress {
-    from_port   = var.https_port
-    to_port     = var.https_port
-    protocol    = var.tcp_protocol
-    cidr_blocks = var.ingress_cidr_blocks
-  }
-
   # Allow application traffic on port 3000
   ingress {
-    from_port   = var.app_port
-    to_port     = var.app_port
-    protocol    = var.tcp_protocol
-    cidr_blocks = var.ingress_cidr_blocks
+    from_port       = var.app_port
+    to_port         = var.app_port
+    protocol        = var.tcp_protocol
+    security_groups = [aws_security_group.loadBalancer_sg.id]
+    //cidr_blocks = var.ingress_cidr_blocks
   }
 
   # Allow all outbound traffic
@@ -46,19 +31,45 @@ resource "aws_security_group" "application-security-group" {
 
 
   tags = {
-    Name = "application-security-group"
+    Name = "WebAppSecurityGroup"
   }
 }
 
 
-resource "aws_instance" "web_app_ec2" {
-  ami                    = var.custom_ami
-  instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.application-security-group.id]
-  subnet_id              = aws_subnet.public[0].id
-  iam_instance_profile   = aws_iam_instance_profile.ec2_s3_profile.name
+resource "aws_launch_template" "ec2_lt" {
+  name                                 = "asg_launch_config"
+  image_id                             = var.custom_ami
+  instance_initiated_shutdown_behavior = "terminate"
+  instance_type                        = var.instance_type
+  key_name                             = var.aws_public_key
+  disable_api_termination              = false
+  iam_instance_profile {
 
-  user_data = <<-EOF
+    name = aws_iam_instance_profile.ec2_s3_profile.name
+
+  }
+
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      delete_on_termination = true
+      volume_size           = var.volume_size
+      volume_type           = var.volume_type
+    }
+  }
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.webapp_sg.id]
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "asg_launch_config"
+    }
+  }
+  user_data = base64encode(<<-EOF
               #!/bin/bash
               cd /home/csye-6225/webapp/webapp
               touch .env
@@ -79,25 +90,14 @@ resource "aws_instance" "web_app_ec2" {
               -c file:/opt/cloudwatch-config.json \
               -s
               EOF
-
-  disable_api_termination = false
-
-  root_block_device {
-    volume_size           = var.volume_size
-    volume_type           = var.volume_type
-    delete_on_termination = true
-  }
-
-  tags = {
-    Name = "web-app-instance"
-  }
+  )
 }
 
 
-# Define a local variable for the EC2 public IP
-locals {
-  ec2_public_ip = aws_instance.web_app_ec2.public_ip
-}
+#Define a local variable for the EC2 public IP
+# locals {
+#   ec2_public_ip = aws_instance.web_app_ec2.public_ip
+# }
 
 resource "aws_iam_policy" "webapp_s3_policy" {
   name        = "WebappS3Policy"
@@ -171,7 +171,7 @@ resource "aws_iam_instance_profile" "ec2_s3_profile" {
 }
 
 # Output the EC2 public IP for reference
-output "ec2_public_ip" {
-  description = "The public IP of the EC2 instance"
-  value       = local.ec2_public_ip
-}
+# output "ec2_public_ip" {
+#   description = "The public IP of the EC2 instance"
+#   value       = local.ec2_public_ip
+# }

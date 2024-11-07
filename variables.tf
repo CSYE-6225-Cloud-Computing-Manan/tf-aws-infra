@@ -218,3 +218,163 @@ variable "s3_rule_status" {
   description = "The status for the S3 rule"
   type        = string
 }
+
+variable "aws_public_key" {
+  description = "The public key for the EC2 instance"
+  type        = string
+}
+
+variable "mysql_parameter_group" {
+  description = "The name of the MySQL parameter group"
+  type        = string
+}
+
+variable "db_subnet_group" {
+  description = "The name of the RDS subnet group"
+  type        = string
+}
+
+variable "load_balancer_name" {
+  description = "The name of the load balancer"
+  type        = string
+}
+
+variable "load_balancer_type" {
+  description = "The type of load balancer"
+  type        = string
+}
+
+variable "tg_name" {
+  description = "The name of the target group"
+  type        = string
+}
+
+variable "target_type" {
+  description = "The target type for the target group"
+  type        = string
+}
+
+variable "http_protocol" {
+  description = "The HTTP protocol"
+  type        = string
+}
+
+variable "health_check_path" {
+  description = "The path for the health check"
+  type        = string
+}
+
+variable "health_check_port" {
+  description = "The port for the health check"
+  type        = string
+}
+
+variable "lb_listener_type" {
+  description = "The type of listener for the load balancer"
+  type        = string
+}
+
+variable "asg_name" {
+  description = "The name of the auto scaling group"
+  type        = string
+}
+
+variable "asg_min_size" {
+  description = "The minimum size for the auto scaling group"
+  type        = number
+}
+
+variable "asg_max_size" {
+  description = "The maximum size for the auto scaling group"
+  type        = number
+}
+
+variable "asg_desired_capacity" {
+  description = "The desired capacity for the auto scaling group"
+  type        = number
+}
+
+variable "asg_default_cooldown" {
+  description = "The default cooldown for the auto scaling group"
+  type        = number
+}
+
+variable "asg_scale_out_name" {
+  description = "The name of the scale out policy"
+  type        = string
+}
+
+variable "adjustment_type" {
+  description = "The adjustment type for the auto scaling policy"
+  type        = string
+}
+
+variable "metric_name" {
+  description = "The metric name for the cloudwatch alarm"
+  type        = string
+}
+
+variable "namespace" {
+  description = "The namespace for the cloudwatch alarm"
+  type        = string
+}
+
+variable "period" {
+  description = "The period for the cloudwatch alarm"
+  type        = number
+}
+
+variable "statistic" {
+  description = "The statistic for the cloudwatch alarm"
+  type        = string
+}
+
+variable "threshold_scale_out" {
+  description = "The threshold for the scale out alarm"
+  type        = number
+}
+
+variable "comparison_operator_scale_out" {
+  description = "The comparison operator for the scale out alarm"
+  type        = string
+}
+
+variable "evaluation_periods_scale_out" {
+  description = "The evaluation periods for the scale out alarm"
+  type        = number
+}
+
+variable "scaling_adjustment_scale_out" {
+  description = "The scaling adjustment for the scale out policy"
+  type        = number
+}
+
+variable "asg_scale_in_name" {
+  description = "The name of the scale in policy"
+  type        = string
+}
+
+variable "comparison_operator_scale_in" {
+  description = "The comparison operator for the scale in alarm"
+  type        = string
+}
+
+variable "evaluation_periods_scale_in" {
+  description = "The evaluation periods for the scale in alarm"
+  type        = number
+}
+
+variable "scaling_adjustment_scale_in" {
+  description = "The scaling adjustment for the scale in policy"
+  type        = number
+}
+
+variable "threshold_scale_in" {
+  description = "The threshold for the scale in alarm"
+  type        = number
+}
+
+variable "record_type_A" {
+  description = "The record type for the Route 53 record"
+  type        = string
+}
