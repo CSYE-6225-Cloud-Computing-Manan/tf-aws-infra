@@ -8,7 +8,7 @@ resource "aws_security_group" "database" {
     from_port       = var.db_port
     to_port         = var.db_port
     protocol        = var.tcp_protocol
-    security_groups = [aws_security_group.application-security-group.id]
+    security_groups = [aws_security_group.webapp_sg.id]
   }
 
   # No egress rule - restrict access to the internet
@@ -20,7 +20,7 @@ resource "aws_security_group" "database" {
 
 
 resource "aws_db_parameter_group" "mysql_parameter_group" {
-  name        = "mysql-parameter-group"
+  name        = var.mysql_parameter_group
   family      = var.pg_family
   description = "Custom MySQL parameter group A05"
 
@@ -31,7 +31,7 @@ resource "aws_db_parameter_group" "mysql_parameter_group" {
 
 # Create Subnet Group for RDS (Using Private Subnets)
 resource "aws_db_subnet_group" "db_subnet_group" {
-  name       = "rds-private-subnet-group"
+  name       = var.db_subnet_group
   subnet_ids = [aws_subnet.private[0].id, aws_subnet.private[1].id]
 
   tags = {
