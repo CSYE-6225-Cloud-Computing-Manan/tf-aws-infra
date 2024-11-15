@@ -378,3 +378,13 @@ variable "record_type_A" {
   description = "The record type for the Route 53 record"
   type        = string
 }
+
+variable "sendgrid_api_key" {
+  description = "The SendGrid API key"
+  type        = string
+}
+
+variable "verification_url" {
+  description = "The verification URL"
+  type        = string
+}

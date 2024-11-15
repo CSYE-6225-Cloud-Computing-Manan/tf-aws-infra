@@ -63,3 +63,7 @@ resource "aws_db_instance" "database" {
     Name = "csye6225-mysql-instance"
   }
 }
+
+output "rds_endpoint" {
+  value = aws_db_instance.database.endpoint
+}
