@@ -388,3 +388,8 @@ variable "verification_url" {
   description = "The verification URL"
   type        = string
 }
+
+variable "lambda_file_path" {
+  description = "The path to the Lambda function ZIP file"
+  type        = string
+}

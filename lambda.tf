@@ -109,7 +109,7 @@ resource "aws_lambda_function" "serverless_function" {
   role          = aws_iam_role.lambda_exec_role.arn
   timeout       = 30
   memory_size   = 128
-  filename      = "./function.zip"
+  filename      = var.lambda_file_path
 
   environment {
     variables = {
@@ -124,7 +124,7 @@ resource "aws_lambda_function" "serverless_function" {
     }
   }
 
-  source_code_hash = filebase64sha256("./function.zip")
+  source_code_hash = filebase64sha256(var.lambda_file_path)
 
   vpc_config {
     subnet_ids         = [aws_subnet.private[0].id, aws_subnet.private[1].id]
