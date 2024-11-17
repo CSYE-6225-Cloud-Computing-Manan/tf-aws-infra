@@ -7,34 +7,6 @@ resource "aws_sns_topic" "notification_topic" {
   }
 }
 
-# Security Group for Lambda
-resource "aws_security_group" "lambda_sg" {
-  name        = "lambda-security-group"
-  description = "Security group for Lambda function"
-  vpc_id      = aws_vpc.dev_vpc.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "lambda-sg"
-  }
-}
-
-# Security Group Rule for Lambda to RDS
-resource "aws_security_group_rule" "lambda_to_rds" {
-  type                     = "ingress"
-  from_port                = var.db_port
-  to_port                  = var.db_port
-  protocol                 = var.tcp_protocol
-  security_group_id        = aws_security_group.database.id
-  source_security_group_id = aws_security_group.lambda_sg.id
-}
-
 # Lambda Execution Role
 resource "aws_iam_role" "lambda_exec_role" {
   name = "lambda-exec-role"
@@ -94,7 +66,6 @@ resource "aws_iam_policy" "lambda_policy" {
 EOF
 }
 
-
 # Attach Lambda Policy to Role
 resource "aws_iam_role_policy_attachment" "lambda_attach_policy" {
   role       = aws_iam_role.lambda_exec_role.name
@@ -103,7 +74,7 @@ resource "aws_iam_role_policy_attachment" "lambda_attach_policy" {
 
 # Lambda Function
 resource "aws_lambda_function" "serverless_function" {
-  function_name = "serverless-handler"
+  function_name = "serverless-email-handler"
   handler       = "index.handler"
   runtime       = "nodejs20.x"
   role          = aws_iam_role.lambda_exec_role.arn
@@ -111,28 +82,41 @@ resource "aws_lambda_function" "serverless_function" {
   memory_size   = 128
   filename      = var.lambda_file_path
 
+  # Place Lambda in a public subnet
+  vpc_config {
+    subnet_ids         = aws_subnet.private[*].id # Use private subnets
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
   environment {
     variables = {
       SENDGRID_API_KEY = var.sendgrid_api_key
       VERIFICATION_URL = var.verification_url
-      DB_HOST          = aws_db_instance.database.endpoint
-      DB_PORT          = var.db_port
-      DB_NAME          = var.db_name
-      DB_USERNAME      = var.username
-      DB_PASSWORD      = var.db_password
-      DB_DIALECT       = var.db_dialect
     }
   }
 
   source_code_hash = filebase64sha256(var.lambda_file_path)
 
-  vpc_config {
-    subnet_ids         = [aws_subnet.private[0].id, aws_subnet.private[1].id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
+  tags = {
+    Name = "serverless-lambda"
+  }
+}
+
+# Security Group for Lambda
+resource "aws_security_group" "lambda_sg" {
+  name        = "lambda-sg"
+  description = "Allow Lambda outbound access"
+  vpc_id      = aws_vpc.dev_vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # All protocols
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
-    Name = "serverless-lambda"
+    Name = "Lambda Security Group"
   }
 }
 
