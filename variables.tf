@@ -393,3 +393,8 @@ variable "lambda_file_path" {
   description = "The path to the Lambda function ZIP file"
   type        = string
 }
+
+variable "aws_account_id" {
+  description = "The AWS account ID"
+  type        = string
+}
