@@ -398,3 +398,8 @@ variable "aws_account_id" {
   description = "The AWS account ID"
   type        = string
 }
+
+variable "ipv6_cidr_block" {
+  description = "The IPv6 CIDR block for the VPC"
+  type        = list(string)
+}
