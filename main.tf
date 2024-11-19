@@ -81,6 +81,7 @@ resource "aws_launch_template" "ec2_lt" {
               echo "DB_DIALECT=${var.db_dialect}" >> .env
               echo "AWS_REGION=${var.aws_region}" >> .env
               echo "AWS_BUCKET_NAME=${aws_s3_bucket.bucket.bucket}" >> .env
+              echo "SNS_TOPIC_ARN=arn:aws:sns:us-east-1:761018886217:lambda-serverless-topic" >> .env
               sudo systemctl enable startup.service
               sudo systemctl start startup.service
 
@@ -117,6 +118,15 @@ resource "aws_iam_policy" "webapp_s3_policy" {
         "Resource" : [
           "arn:aws:s3:::${aws_s3_bucket.bucket.bucket}",
           "arn:aws:s3:::${aws_s3_bucket.bucket.bucket}/*"
+        ]
+      },
+      {
+        "Action" : [
+          "sns:Publish"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          aws_sns_topic.notification_topic.arn
         ]
       }
     ]
