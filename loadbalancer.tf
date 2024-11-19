@@ -5,19 +5,21 @@ resource "aws_security_group" "loadBalancer_sg" {
   vpc_id      = aws_vpc.dev_vpc.id
 
   ingress {
-    description = "https from Anywhere for LB"
-    from_port   = var.https_port
-    to_port     = var.https_port
-    protocol    = var.tcp_protocol
-    cidr_blocks = var.ingress_cidr_blocks
+    description      = "https from Anywhere for LB"
+    from_port        = var.https_port
+    to_port          = var.https_port
+    protocol         = var.tcp_protocol
+    cidr_blocks      = var.ingress_cidr_blocks
+    ipv6_cidr_blocks = var.ipv6_cidr_block
   }
 
   ingress {
-    description = "http from anywhere for LB"
-    from_port   = var.http_port
-    to_port     = var.http_port
-    protocol    = var.tcp_protocol
-    cidr_blocks = var.ingress_cidr_blocks
+    description      = "http from anywhere for LB"
+    from_port        = var.http_port
+    to_port          = var.http_port
+    protocol         = var.tcp_protocol
+    cidr_blocks      = var.ingress_cidr_blocks
+    ipv6_cidr_blocks = var.ipv6_cidr_block
   }
 
   egress {

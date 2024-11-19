@@ -126,7 +126,7 @@ resource "aws_security_group" "lambda_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1" # All protocols
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.egress_cidr_blocks
   }
 
   tags = {
