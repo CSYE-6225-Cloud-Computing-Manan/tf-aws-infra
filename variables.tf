@@ -403,3 +403,8 @@ variable "ipv6_cidr_block" {
   description = "The IPv6 CIDR block for the VPC"
   type        = list(string)
 }
+
+variable "https_protocol" {
+  description = "The HTTPS protocol"
+  type        = string
+}
