@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 # Security Group for EC2 hosting the web application
 resource "aws_security_group" "webapp_sg" {
   name        = "WebAppSecurityGroup"
@@ -35,6 +37,85 @@ resource "aws_security_group" "webapp_sg" {
   }
 }
 
+resource "aws_kms_key" "ebs" {
+  description = "EBS KMS key"
+  policy      = <<EOF
+{
+    "Id": "key-for-ebs",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${data.aws_caller_identity.current.id}:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow access for Key Administrators",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${data.aws_caller_identity.current.id}:root"
+            },
+            "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow use of the key",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${data.aws_caller_identity.current.id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+            },
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow attachment of persistent resources",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${data.aws_caller_identity.current.id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+            },
+            "Action": [
+                "kms:CreateGrant",
+                "kms:ListGrants",
+                "kms:RevokeGrant"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "Bool": {
+                    "kms:GrantIsForAWSResource": "true"
+                }
+            }
+        }
+    ]
+}
+
+EOF
+}
+
 
 resource "aws_launch_template" "ec2_lt" {
   name                                 = "asg_launch_config"
@@ -55,6 +136,8 @@ resource "aws_launch_template" "ec2_lt" {
       delete_on_termination = true
       volume_size           = var.volume_size
       volume_type           = var.volume_type
+      encrypted             = true
+      kms_key_id            = aws_kms_key.ebs.arn
     }
   }
   network_interfaces {
@@ -71,17 +154,31 @@ resource "aws_launch_template" "ec2_lt" {
   }
   user_data = base64encode(<<-EOF
               #!/bin/bash
+              sudo apt install -y python3 python3-pip 
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+
+              sudo apt-get install jq
+
               cd /home/csye-6225/webapp/webapp
               touch .env
+
+              DB_PASSWORD=$(aws secretsmanager get-secret-value \
+              --secret-id ${aws_secretsmanager_secret.db_secret.id} \
+              --region ${var.aws_region} \
+              --query 'SecretString' \
+              --output text | jq -r '.password')
+
               echo "PORT=3000" >> .env
               echo "DB_HOST=${aws_db_instance.database.address}" >> .env
               echo "DB_NAME=${aws_db_instance.database.db_name}" >> .env
               echo "DB_USERNAME=${aws_db_instance.database.username}" >> .env
-              echo "DB_PASSWORD=${aws_db_instance.database.password}" >> .env
+              echo "DB_PASSWORD=$DB_PASSWORD" >> .env
               echo "DB_DIALECT=${var.db_dialect}" >> .env
               echo "AWS_REGION=${var.aws_region}" >> .env
               echo "AWS_BUCKET_NAME=${aws_s3_bucket.bucket.bucket}" >> .env
-              echo "SNS_TOPIC_ARN=arn:aws:sns:us-east-1:761018886217:lambda-serverless-topic" >> .env
+              echo "SNS_TOPIC_ARN=${aws_sns_topic.notification_topic.arn}" >> .env
               sudo systemctl enable startup.service
               sudo systemctl start startup.service
 
@@ -173,6 +270,54 @@ resource "aws_iam_policy_attachment" "ec2_cloudwatch_policy_role" {
   name       = "webapp_cloudwatch_policy_attachment"
   roles      = [aws_iam_role.webapp_ec2_access_role.name]
   policy_arn = data.aws_iam_policy.webapp_cloudwatch_policy.arn
+}
+
+resource "aws_iam_role_policy" "ec2_s3_kms_policy" {
+  name = "ec2_s3_kms_policy"
+  role = "EC2-WEBAPP-CSYE-6225"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = [
+          aws_s3_bucket.bucket.arn,
+          "${aws_s3_bucket.bucket.arn}/*",
+          aws_kms_key.s3.arn
+        ]
+      }
+    ]
+  })
+}
+
+# Add policy to EC2 role to access DB secret
+resource "aws_iam_role_policy" "ec2_secrets_policy" {
+  name = "ec2-secrets-policy"
+  role = aws_iam_role.webapp_ec2_access_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [aws_secretsmanager_secret.db_secret.arn]
+      }
+    ]
+  })
 }
 
 resource "aws_iam_instance_profile" "ec2_s3_profile" {

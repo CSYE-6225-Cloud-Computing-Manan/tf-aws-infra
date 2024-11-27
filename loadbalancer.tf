@@ -61,8 +61,8 @@ resource "aws_lb_target_group" "alb_tg" {
     protocol            = var.http_protocol
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    timeout             = 6
-    interval            = 30
+    timeout             = 30
+    interval            = 60
   }
 }
 resource "aws_lb_listener" "lb_listener" {

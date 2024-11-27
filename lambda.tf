@@ -74,6 +74,32 @@ resource "aws_iam_policy" "lambda_policy" {
   })
 }
 
+# Add policy to Lambda role to access API secret
+resource "aws_iam_role_policy" "lambda_secrets_policy" {
+  name = "lambda-secrets-policy"
+  role = aws_iam_role.lambda_exec_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [aws_secretsmanager_secret.api_secret.arn]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = [aws_kms_key.secrets.arn]
+      }
+    ]
+  })
+}
+
 # Attach Lambda Policy to Role
 resource "aws_iam_role_policy_attachment" "lambda_attach_policy" {
   role       = aws_iam_role.lambda_exec_role.name
@@ -104,8 +130,8 @@ resource "aws_lambda_function" "serverless_function" {
 
   environment {
     variables = {
-      SENDGRID_API_KEY = var.sendgrid_api_key
       VERIFICATION_URL = var.verification_url
+      API_SECRET_NAME  = aws_secretsmanager_secret.api_secret.name
     }
   }
 
