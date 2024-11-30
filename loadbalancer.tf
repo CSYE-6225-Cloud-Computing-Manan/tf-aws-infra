@@ -13,14 +13,14 @@ resource "aws_security_group" "loadBalancer_sg" {
     ipv6_cidr_blocks = var.ipv6_cidr_block
   }
 
-  ingress {
-    description      = "http from anywhere for LB"
-    from_port        = var.http_port
-    to_port          = var.http_port
-    protocol         = var.tcp_protocol
-    cidr_blocks      = var.ingress_cidr_blocks
-    ipv6_cidr_blocks = var.ipv6_cidr_block
-  }
+  # ingress {
+  #   description      = "http from anywhere for LB"
+  #   from_port        = var.http_port
+  #   to_port          = var.http_port
+  #   protocol         = var.tcp_protocol
+  #   cidr_blocks      = var.ingress_cidr_blocks
+  #   ipv6_cidr_blocks = var.ipv6_cidr_block
+  # }
 
   egress {
     from_port   = 0
@@ -67,10 +67,25 @@ resource "aws_lb_target_group" "alb_tg" {
 }
 resource "aws_lb_listener" "lb_listener" {
   load_balancer_arn = aws_lb.lb.arn
-  port              = var.http_port
-  protocol          = var.http_protocol
+  port              = var.https_port
+  protocol          = var.https_protocol
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
   default_action {
     type             = var.lb_listener_type
     target_group_arn = aws_lb_target_group.alb_tg.arn
+  }
+}
+
+resource "aws_acm_certificate" "ssl_certificate" {
+  domain_name       = var.domain_name
+  validation_method = "DNS"
+
+  tags = {
+    Environment = "dev"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }

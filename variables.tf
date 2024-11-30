@@ -408,3 +408,9 @@ variable "https_protocol" {
   description = "The HTTPS protocol"
   type        = string
 }
+
+variable "certificate_arn" {
+  description = "The ARN of the certificate for the load balancer"
+  type        = string
+
+}
