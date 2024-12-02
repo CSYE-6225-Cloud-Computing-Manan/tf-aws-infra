@@ -2,8 +2,9 @@
 resource "random_uuid" "uuid" {}
 
 resource "aws_kms_key" "s3" {
-  description = "s3 KMS key"
-  policy      = <<EOF
+  description         = "s3 KMS key"
+  enable_key_rotation = true
+  policy              = <<EOF
 {
     "Id": "key-for-s3",
     "Version": "2012-10-17",
