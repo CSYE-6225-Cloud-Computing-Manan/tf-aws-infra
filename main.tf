@@ -38,9 +38,11 @@ resource "aws_security_group" "webapp_sg" {
 }
 
 resource "aws_kms_key" "ebs" {
-  description         = "EBS KMS key"
-  enable_key_rotation = true
-  policy              = <<EOF
+  description              = "EBS KMS key"
+  customer_master_key_spec = "SYMMETRIC_DEFAULT"
+  enable_key_rotation      = true
+  rotation_period_in_days  = 90
+  policy                   = <<EOF
 {
     "Id": "key-for-ebs",
     "Version": "2012-10-17",

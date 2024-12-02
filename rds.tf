@@ -5,9 +5,9 @@ resource "random_password" "password" {
 #kms key for RDS
 resource "aws_kms_key" "rds" {
   description              = "RDS KMS key"
-  deletion_window_in_days  = 10
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   enable_key_rotation      = true
+  rotation_period_in_days  = 90
   multi_region             = true
   policy = jsonencode(
 
