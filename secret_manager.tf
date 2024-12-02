@@ -1,8 +1,10 @@
 # KMS key for Secrets Manager
 resource "aws_kms_key" "secrets" {
-  description         = "KMS key for Secrets Manager"
-  enable_key_rotation = true
-  policy              = <<EOF
+  description              = "KMS key for Secrets Manager"
+  customer_master_key_spec = "SYMMETRIC_DEFAULT"
+  enable_key_rotation      = true
+  rotation_period_in_days  = 90
+  policy                   = <<EOF
 {
     "Version": "2012-10-17",
     "Statement": [
