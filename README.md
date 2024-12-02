@@ -60,3 +60,15 @@ Confirm the action when prompted. By typing Yes
     ```bash
     terraform destroy -var-file="your-variables.tfvars"
     ```
+
+## Command To Import SSL Certifcate
+
+```
+    aws acm import-certificate \
+    --certificate fileb://demo_webappmv_me.crt \
+    --private-key fileb://private-key.pem \
+    --certificate-chain fileb://demo_webappmv_me.ca-bundle \
+    --profile demo \
+    --region us-east-1
+
+```
